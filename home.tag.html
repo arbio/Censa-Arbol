@@ -1,0 +1,637 @@
+<survey-list>
+
+	<main class="c-text o-grid o-grid--no-gutter o-panel">
+        <div class="o-grid__cell o-panel-container" style="padding:0px">
+            <!--div ref="spacer"></div-->
+
+            <div if={ about }>
+                <div class="c-overlay"></div>
+                <div class="o-modal c-text">
+                  <div class="c-card u-centered">
+                    <header class="c-card__header">
+                      <h2 class="c-heading">Censa Arbol 1</h2>
+                    </header>
+                    <div class="c-card__body">
+                      Censa Árbol es Software Libre y puede ser aprovechado bajo los términos de la licencia GNU GPLv3.
+                    </div>
+                    <footer class="c-card__footer">
+                      <div class="u-small">Copyright © 2017<br>Equipo de R&D SomosAzucar.Org<br>
+                      Bajo encargo de ArbioPeru.Org</div>
+                      <button type="button" onclick={ hide_about } class="c-button c-button--brand">OK</button>
+                    </footer>
+                  </div>
+                </div>
+            </div>
+
+            <div if={ selector_especies }>
+                <div class="c-overlay"></div>
+                <div class="o-modal c-text">
+                  <div class="c-card--menu u-centered">
+                    <header class="c-card__header">
+                      <h2 class="c-heading">Especies</h2>
+                    </header>
+                    <div class="c-card__body o-panel">
+                        <div each={ especie in especies } if={ especie.especie } class="c-card__item" data-fam={ especie.familia } data-cien={ especie.cientifico } onclick={ set_especie }>{ especie.especie }</div>
+                    </div>
+                    <footer class="c-card__footer">
+                      <button type="button" onclick={ hide_selector_especies } class="c-button c-button--brand">Cancelar</button>
+                    </footer>
+                  </div>
+                </div>
+            </div>
+
+            <nav class="c-nav c-nav--top c-nav--inline">
+                <div class="c-text--loud c-nav__content u-large" style="padding-left:10px; padding-right: 0px">
+                    <div onclick={ show_about } style="font-family: monospace">
+                    <img src="censarbol.png" style="vertical-align:middle; height: 2.9em">Censa Árbol
+                    </div>
+                </div>
+                <div class="c-nav__content c-nav__item--right c-text--loud" style="padding-left:0px; padding-right: 10px">
+                <button hide={ adding_tree } class="c-button c-button--info u-xlarge c-text c-text--loud" style="color: black; margin-top: .2em" onclick={ add_tree }>&nbsp;+&nbsp;</button>
+                <button show={ adding_tree } class="c-button c-button--warning u-xlarge c-text" style="color:black; margin-top: .2em" onclick={ commit_tree }>OK</button>
+                </div>
+            </nav>
+
+            <nav class="c-nav c-nav--bottom c-nav--inline u-centered" hide={ adding_tree } >
+                <div class="c-nav__content c-text u-small">
+                { len(trees) } registros
+                </div>
+            </nav>
+
+            <div ref="tree_list" hide={ adding_tree } class="o-panel" style="bottom: 3em; top: 3.95em">
+                <div class="c-card" style="margin-left: auto; margin-right: auto; width: 99%">
+                <div class="c-card__item--brand c-text u-high" each={ tree in trees } if={ tree.codigo } style="padding: 6px; margin-top:5px">
+                <button data-id={ tree.id } onclick={ load_tree } class="c-button c-button--success u-high u-large" style="width: 3em;">#{ tree.id }</button>
+                &nbsp;{ tree.codigo }&nbsp;
+                <span class="c-badge c-badge--ghost c-badge--rounded" if={ tree.especie }>{ tree.especie }</span>&nbsp;
+                <span class="c-badge c-badge--ghost c-badge--rounded" if={ tree.dia }>&#x2300; { tree.dia }cm</span>
+                </div>
+                </div>
+            </div>
+
+            <div ref="tree_form" show={ adding_tree } class="o-panel" style="top: 3.95em">
+                <div class="c-card o-form-element">
+
+                    <div class="c-card__item u-centered" style="margin-top: 5px">
+                    <button if={ selected_tree } ref="picButton" id="picButton" onclick={ take_pic } class="c-button { c-button--success: need_pic() } c-button--rounded u-large u-high">{ len(selected_tree.data['fotos']) } fotos - Tomar Nueva</button>
+                    <div class="c-text u-small">
+                    
+                    </div>
+                    <div ref='thumbs'>
+                    </div>
+                    </div>
+
+                    <div class="c-card__item c-input-group o-field">
+                    <input ref="id" class="c-input c-field u-small" if={ selected_tree } value="Registro # { selected_tree.id }" disabled />
+                    <input ref="codigo" class="c-input c-field" placeholder="Código" />
+                    </div>
+
+                    <div class="c-card__item c-input-group__stacked o-field">
+                    <div class="c-input-group">
+                      <div class="o-field">
+                        <input ref="especie" class="c-input c-field" placeholder="Nombre Común" />
+                      </div>
+                      <button class="c-button u-small" onclick={ show_selector_especies } >Buscar...</button>
+                    </div>
+                    <input ref="cientifico" class="c-input c-field" placeholder="Nombre Científico" />
+                    <input ref="familia" class="c-input c-field" placeholder="Familia" />
+                    </div>
+
+                    <div if={ selected_tree } class="c-card__item c-input-group o-field">
+                    <input ref="lat"  onchange={ selected_tree.updateUtm } class="c-input c-field u-small" placeholder="Latitud" />
+                    <input ref="long" onchange={ selected_tree.updateUtm } class="c-input c-field u-small" placeholder="Longitud" />
+                    </div>
+
+                    <div class="c-card__item c-input-group o-field">
+                    <input ref="utm_x" class="c-input c-field u-small" placeholder="Utm X" disabled />
+                    <input ref="utm_y" class="c-input c-field u-small" placeholder="Utm Y" disabled />
+                    <input ref="utm_zone" class="c-input c-field u-small" placeholder="Zona Utm" disabled />
+                    <input ref="utm_south" class="c-input c-field u-small" placeholder="Hemisferio" disabled />
+                    </div>
+
+                    <div class="c-card__item c-input-group o-field">
+                    <input type="number" ref="circ" class="c-input c-field" oninput={ calc_dia } placeholder="Circ (cm)" />
+                    <input type="number" ref="dia" class="c-input c-field auto-field" placeholder="Diá (cm)" disabled />
+                    <input type="number" ref="alt" class="c-input c-field" placeholder="Altura (m)" />
+                    </div>
+
+                    <div class="c-card__item c-input-group o-field">
+                    <select onclick="" ref="fenologia" class="c-input c-field" placeholder="Fenología">
+                        <option value="" selected>Fenología</option>
+                        <option value="semillación">Semillación</option>
+                        <option value="floración">Floración</option>
+                        <option value="fructificación">Fructificación</option>
+                        <option value="caída_de_hojas">Caída de hojas</option>
+                    </select>
+                    <input ref="fechahora" value={ new Date().toLocaleString() } class="c-input c-field u-small u-centered" placeholder="Fecha / Hora" disabled />
+                    </div>
+
+                    <div class="head-field c-card__item c-input-group o-field">
+                    <div class="head-label c-label c-field u-centered u-small">Relevancia</div>
+                    <div class="head-label c-label c-field u-centered u-small">Otros</div>
+                    </div>
+
+                    <div class="c-card__item c-input-group o-field" style="padding-top:0px">
+                    <select multiple ref="relevancia" class="c-input c-field">
+                        <option value="medicinal">Medicinal</option>
+                        <option value="maderable">Maderable</option>
+                        <option value="ornamental">Ornamental</option>
+                        <option value="frutal">Frutal</option>
+                        <option value="sagrado">Sagrado</option>
+                        <option value="majestuoso">Majestuoso</option>
+                        <option value="fauna">Fauna Silvestre</option>
+                    </select>
+                    <select multiple ref="otros" class="c-input c-field">
+                        <option value="nidos">Presencia de Nidos</option>
+                        <option value="regeneracion">Regeneración Natural</option>
+                        <option value="hongos">Presencia de Hongos</option>
+                        <option value="pudricion_fuste">Pudrición del Fuste</option>
+                    </select>
+                    </div>
+
+                    <div class="c-card__item c-input-group o-field">
+                    <textarea ref="obs" class="c-input c-field" placeholder="Observaciones"></textarea>
+                    <textarea ref="notas" class="c-input c-field" placeholder="Notas"></textarea>
+                    <textarea ref="fotos" class="c-input c-field" placeholder="Fotos" style="display:none"></textarea>
+                    </div>
+
+                    <div class="c-card__item c-input-group c-input-group o-field">
+                    <br>
+                    <label class="c-toggle c-toggle--error" style="width: 100%; padding: 1em;">
+                      <input ref="careful_toggle" type="checkbox" onchange={ update }>
+                      <div class="c-toggle__track">
+                        <div class="c-toggle__handle"></div>
+                      </div>
+                      Opciones avanzadas
+                    </label>
+                    <br>
+                    </div>
+                    
+                    <div if={ this.refs.careful_toggle.checked } class="c-card__item u-centered">
+                    <br />
+                    <button if={ selected_tree } class="c-button { c-button--success : selected_tree.gps_state=='Auto' } { c-button--error : selected_tree.gps_state=='Manual' } c-button--rounded u-large u-high" style="width: 80%" onclick={ toggle_gps }>GPS : { selected_tree.gps_state }</button>
+                    <br /> <br> <hr /> <br />
+                    <button if={ selected_tree } class="c-button c-button--error c-button--rounded u-large u-high" style="width: 80%" onclick={ selected_tree.drop }>BORRAR REGISTRO</button>
+                    <br /><br />
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+<style>
+.auto-field::-webkit-input-placeholder {
+    color: #96a8b2;
+}
+::-webkit-input-placeholder {
+    color: white;
+}
+.c-input {
+    text-align: center;
+    background-color: #e5eaec;
+    border-color: #96a8b2;
+}
+.head-label {
+    color: #96a8b2;
+    padding: 0px !important;
+    border: none;
+}
+.head-field {
+    border-bottom: none !important;
+    padding-bottom: 0px;
+}
+#picButton {
+    width: 80%;
+}
+</style>
+
+<script type='text/Rapyd'>
+
+tag = this
+if localStorage.getItem('trees') is not None:
+    tag.trees = JSON.parse(localStorage.getItem('trees'))
+else:
+    tag.trees = []
+
+especies = {}
+for tree in tag.trees:
+    if tree is not None:
+        if tree.especie not in especies:
+            especies[tree.especie] = { 'especie': tree.especie,
+                                       'cientifico': tree.cientifico,
+                                       'familia' : tree.familia }
+    else:
+        tag.trees.splice(tag.trees.indexOf(tree))
+tag.especies = especies
+converter = new UtmConverter()
+
+# Model
+OutputUri = "file:///sdcard/DCIM/"
+
+class TreeRecord:
+    TreeRecord.count = None
+
+    def __init__(self, id=None):
+        if id is not None:
+            self.id = id
+            self.data = tag.trees[id - 1]
+            return self
+        self.id = TreeRecord.count + 1
+        TreeRecord.count += 1
+        self.data = {}
+        self.data['fotos'] = []
+
+        self.start_gps()
+        self.timer = setInterval(def():
+            tag.refs.fechahora.value = new Date().toLocaleString()
+        , 1000)
+
+    def start_gps(self):
+        self.gps_state = 'Auto'
+        self.watch = navigator.geolocation.watchPosition( self.succeed, 
+                                    self.error, {
+                                    "maximumAge" : 50000,
+                                    "timeout" : 20000,
+                                    "enableHighAccuracy" : True } )
+
+    def commit(self):
+        tag.trees[self.id - 1] = self.data
+        if self.data['especie'] not in tag.especies:
+            tag.especies[self.data['especie']] = { 'especie': self.data['especie'],
+                                   'cientifico': self.data['cientifico'],
+                                   'familia' : self.data['familia'] }
+
+    def updateUtm(self):
+        utmCoords = converter.toUtm (
+            {'coord':[float(tag.refs.long.value) , float(tag.refs.lat.value)] })
+        tag.refs.utm_x.value = tag.selected_tree.data['utm_x'] = utmCoords.coord.x
+        tag.refs.utm_y.value =  tag.selected_tree.data['utm_y'] = utmCoords.coord.y
+        tag.refs.utm_zone.value =  tag.selected_tree.data['utm_zone'] = utmCoords.zone
+        tag.refs.utm_south.value =  tag.selected_tree.data['utm_south'] = 'S' if  utmCoords.isSouthern else 'N'
+
+    def succeed(self, position):
+        self = tag.selected_tree
+        tag.refs.lat.value = self.data['lat'] = position.coords.latitude
+        tag.refs.long.value = self.data['long'] = position.coords.longitude
+        self.updateUtm()
+        color_placeholders()
+
+    def error(self, ee):
+        print (ee.message)
+
+    def drop(self):
+        resetFormValues()
+        getFormValues(tag.selected_tree)
+        save_db()
+        tag.adding_tree = False
+        clearWatch(tag.selected_tree)
+        del tag.selected_tree
+        tag.update()
+
+
+TreeRecord.count = len(tag.trees) 
+
+# Controller
+
+this.adding_tree = False
+this.about = False
+
+def add_tree():
+    tag.adding_tree = True
+    this.refs.careful_toggle.checked = False
+    if tag.selected_tree is undefined:
+        tag.selected_tree = TreeRecord()
+    else:
+        tag.selected_tree = TreeRecord()
+this.add_tree = add_tree
+
+def calc_dia():
+    if tag.refs.circ.value is not '':
+        tag.refs.dia.value = Math.round(float(tag.refs.circ.value) / Math.PI)
+    else:
+        tag.refs.dia.value = ''
+    tag.update()
+this.calc_dia = calc_dia
+
+def set_especie(e):
+    tag.refs.especie.value = e.target.innerHTML
+    tag.refs.cientifico.value = e.target.getAttribute('data-cien')
+    tag.refs.familia.value = e.target.getAttribute('data-fam')
+    hide_selector_especies()
+this.set_especie = set_especie
+
+def download_data():
+    filename = "censa_arbol_db.csv"
+    if window.cordova: 
+        uri = OutputUri + filename 
+        def success():
+            console.log('Saved.')
+        def error(ee):
+            alert(ee)
+        fileStorage.writeToUri(success, error, uri, csv.encode(tag.trees) )
+    else:
+        encodedUri = encodeURI(csv.encode(tag.trees))
+        link = document.createElement("a");
+        link.setAttribute("href", "data:text/csv;charset=utf-8," + encodedUri)
+        link.setAttribute("download", filename)
+        link.click()
+
+def toggle_gps(e):
+    if tag.selected_tree.gps_state=='Auto':
+        tag.selected_tree.gps_state = 'Manual'
+        clearWatch(tag.selected_tree)
+        tag.refs.long.disabled = False
+        tag.refs.lat.disabled = False
+    elif tag.selected_tree.gps_state=='Manual':
+        if confirm('Capturar nueva ubicación?'):
+            tag.selected_tree.gps_state = 'Auto'
+            tag.selected_tree.start_gps()
+            tag.refs.long.disabled = True
+            tag.refs.lat.disabled = True
+    tag.update()
+tag.toggle_gps = toggle_gps
+
+def save_db(save_selected=True):
+    if save_selected:
+        tag.selected_tree.commit()
+    def success():
+        pass
+    def error(ee):
+        alert(ee)
+    if window.cordova:
+        filename = "censa_arbol_log.csv"
+        uri = OutputUri + filename 
+        fileStorage.appendToUri(success, error, uri, csv.encode([tag.selected_tree.data], ',', False) + "\n")
+    localStorage.trees = JSON.stringify(tag.trees)
+    download_data()
+
+def commit_tree(e):
+    if tag.refs.codigo.value=='':
+        deny_pic_button()
+        tag.refs.codigo.focus()
+        return
+    getFormValues(tag.selected_tree)
+    resetFormValues()
+    save_db()
+    tag.adding_tree = False
+    clearWatch(tag.selected_tree)
+    del tag.selected_tree
+    tag.update()
+this.commit_tree = commit_tree
+
+def load_tree(event):
+    id = event.target.getAttribute('data-id')
+    tree = tag.selected_tree = TreeRecord(id)
+    tag.adding_tree = True
+    tree.gps_state = 'Manual'
+    tag.update()
+    tag.refs.lat.disabled = False
+    tag.refs.long.disabled = False
+    tag.refs.careful_toggle.checked = False
+    tag.refs.especie.value = tree.data['especie'] or ''
+    tag.refs.cientifico.value = tree.data['cientifico'] or ''
+    tag.refs.familia.value = tree.data['familia'] or ''
+    tag.refs.codigo.value = tree.data['codigo'] or ''
+    tag.refs.alt.value = tree.data['alt'] or ''
+    tag.refs.dia.value = tree.data['dia'] or ''
+    tag.refs.circ.value = tree.data['circ'] or ''
+    tag.refs.fenologia.value = tree.data['fenologia'] or ''
+    tag.refs.notas.value = tree.data['notas'] or ''
+    tag.refs.obs.value = tree.data['obs'] or ''
+    tag.refs.lat.value = tree.data['lat'] or ''
+    tag.refs.long.value = tree.data['long'] or ''
+    tag.refs.utm_x.value = tree.data['utm_x'] or ''
+    tag.refs.utm_y.value = tree.data['utm_y'] or ''
+    tag.refs.utm_zone.value = tree.data['utm_zone'] or ''
+    tag.refs.utm_south.value = tree.data['utm_south'] or ''
+    tag.refs.fechahora.value = tree.data['fechahora'] or ''
+    tag.refs.fotos.value = JSON.stringify(tree.data['fotos']) or ''
+    options = []
+    for item in JSON.parse(tree.data['relevancia'] or '[]'):
+        options.push(item)
+    for item in tag.refs.relevancia.children:
+        if item.value in options:
+            item.selected = True
+    options = []
+    for item in JSON.parse(tree.data['otros'] or '[]'):
+        options.push(item)
+    for item in tag.refs.otros.children:
+        if item.value in options:
+            item.selected = True
+    tag.update()
+this.load_tree = load_tree
+
+def deny_pic_button():
+    orig_color = tag.refs.picButton.style.backgroundColor
+    tag.refs.picButton.style.backgroundColor = 'red'
+    orig_text = tag.refs.picButton.innerHTML
+    tag.refs.picButton.innerHTML = "Asigna un código"
+    def restore():
+        tag.refs.picButton.style.backgroundColor = orig_color
+        tag.refs.picButton.innerHTML = orig_text
+        document.removeEventListener("input", restore)
+    document.addEventListener("input", restore)
+
+def take_pic(e):
+    if tag.refs.codigo.value:
+        tag.refs.picButton.disabled = True
+        if navigator.camera:
+            navigator.camera.getPicture(processPic, failPic, {
+                    'quality': 100,
+                    'sourceType': Camera.PictureSourceType.CAMERA,
+                    'destinationType': Camera.DestinationType.FILE_URI })
+        else:
+            console.log("NO CAMERA")
+    else:
+        deny_pic_button()
+        tag.refs.codigo.focus()
+this.take_pic = take_pic
+
+def need_pic(e):
+    return len(tag.selected_tree.data['fotos']) == 0
+this.need_pic = need_pic
+
+def show_pic(path):
+    #image = community.thumbnail.createThumbNail(path, {'width':240})
+    image = document.createElement('img')
+    image.attributes.src = path
+    alert(path)
+    tag.refs.thumbs.appendChild(image)
+
+def processPic(data):
+    tag.refs.picButton.disabled = False
+    date = new Date()
+    datestring = date.toISOString().replace(/-/g, '').replace(/:/g,'').slice(0,15)
+    filename = 'censo_' + tag.refs.codigo.value
+    filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    filename = [filename, datestring].join('_') + '.jpg'
+    moveFile(data, filename)
+    tag.selected_tree.data['fotos'].push(filename)
+    tag.refs.fotos.value = JSON.stringify(tag.selected_tree.data['fotos'])
+    #show_pic(OutputUri + filename)
+    tag.update()
+
+def moveFile(fileUri, filename):
+    window.resolveLocalFileSystemURL( fileUri,
+        def(fileEntry):
+            window.resolveLocalFileSystemURL(
+                OutputUri,
+                def(dirEntry):
+                    fileEntry.moveTo(dirEntry, filename, onSuccess(fileEntry, dirEntry), failPic)
+        , failPic)
+    , failPic)
+
+def onSuccess(a,b):
+    console.log('moved ' + a.fullPath + ' to ' + b.fullPath)
+
+def failPic(ee):
+    tag.refs.picButton.disabled = False
+    alert(str(ee))
+
+def getFormValues(tree):
+    tree.data['id'] = tree.id
+    tree.data['especie'] = tag.refs.especie.value
+    tree.data['cientifico'] = tag.refs.cientifico.value
+    tree.data['familia'] = tag.refs.familia.value
+    tree.data['codigo'] = tag.refs.codigo.value
+    tree.data['alt'] = tag.refs.alt.value
+    tree.data['dia'] = tag.refs.dia.value
+    tree.data['circ'] = tag.refs.circ.value
+    tree.data['fenologia'] = tag.refs.fenologia.value
+    options = []
+    for item in tag.refs.relevancia.selectedOptions:
+        options.push (item.value)
+    tree.data['relevancia'] = str(options)
+    options = []
+    for item in tag.refs.otros.selectedOptions:
+        options.push (item.value)
+    tree.data['otros'] = str(options)
+    tree.data['notas'] = tag.refs.notas.value
+    tree.data['obs'] = tag.refs.obs.value
+    tree.data['fechahora'] = tag.refs.fechahora.value
+    tree.data['lat'] = tag.refs.lat.value
+    tree.data['long'] = tag.refs.long.value
+    tree.data['utm_x'] = tag.refs.utm_x.value
+    tree.data['utm_y'] = tag.refs.utm_y.value
+    tree.data['utm_zone'] = tag.refs.utm_zone.value
+    tree.data['utm_south'] = tag.refs.utm_south.value
+    tree.data['fotos'] = JSON.parse(tag.refs.fotos.value or [])
+
+def resetFormValues():
+    tag.refs.especie.value = ''
+    tag.refs.cientifico.value = ''
+    tag.refs.familia.value = ''
+    tag.refs.codigo.value = ''
+    tag.refs.alt.value = ''
+    tag.refs.dia.value = ''
+    tag.refs.circ.value = ''
+    tag.refs.fenologia.value = ''
+    tag.refs.otros.value = ''
+    tag.refs.relevancia.value = ''
+    tag.refs.notas.value = ''
+    tag.refs.obs.value = ''
+    tag.refs.lat.value = ''
+    tag.refs.long.value = ''
+    tag.refs.utm_x.value = ''
+    tag.refs.utm_y.value = ''
+    tag.refs.utm_south.value = ''
+    tag.refs.utm_zone.value = ''
+    tag.refs.fechahora.value = ''
+    tag.refs.fotos.value = ''
+
+def clearWatch(tree):
+    if tree.watch is not undefined:
+        navigator.geolocation.clearWatch(tree.watch)
+    if tree.timer is not undefined:
+        clearInterval(tree.timer)
+
+def updateSize():
+    ''' Android 4 Webview workaround (alternatives?) '''
+    pass
+    #tag.refs.spacer.style.height = window.innerHeight + "px"
+window.onresize = updateSize
+
+#def onShowKeyboard():
+#    setTimeout(def(e):
+#        #tag.refs.spacer.style.height = window.innerHeight + "px"
+#        e.target.activeElement.scrollIntoViewIfNeeded()
+#    , 500)
+#document.addEventListener('showkeyboard', onShowKeyboard, False);
+
+def show_about():
+    tag.about = True
+    tag.update()
+this.show_about = show_about
+
+def show_selector_especies():
+    tag.selector_especies = True
+    tag.update()
+this.show_selector_especies = show_selector_especies
+
+def hide_about():
+    tag.about = False
+    tag.update()
+this.hide_about = hide_about
+
+def hide_selector_especies():
+    tag.selector_especies = False
+    tag.update()
+this.hide_selector_especies = hide_selector_especies
+
+def color_placeholders():
+    # this is done in css normally, but android webview doesn't support it
+    for el in document.getElementsByTagName('input'):
+        if el.disabled:
+            continue
+        if el.oninput is None:
+            el.oninput = color_placeholders
+        if len(el.value)==0:
+            el.style.backgroundColor = "#8acc8d"
+        else:
+            el.style.backgroundColor = "#e5eaec"
+
+    for el in document.getElementsByTagName('textarea'):
+        if el.disabled:
+            continue
+        if el.oninput is None:
+            el.oninput = color_placeholders
+        if len(el.value)==0:
+            el.style.backgroundColor = "#8acc8d"
+        else:
+            el.style.backgroundColor = "#e5eaec"
+
+    for el in document.getElementsByTagName('select'):
+        if el.onchange is None:
+            el.onchange = color_placeholders
+        if el.value=='':
+            el.style.backgroundColor = "#8acc8d"
+            el.style.color = "white"
+        else:
+            el.style.backgroundColor = "#e5eaec"
+            el.style.color = "black"
+
+
+this.on("updated", color_placeholders)
+
+def init():
+    all_inputs = list(tag.refs.tree_form.getElementsByTagName('input'))
+
+    def next_input(event):
+        index = all_inputs.indexOf(event.target)
+        if event.keyCode==13:
+            offset = 1
+            while index+offset < len(all_inputs)-1 and all_inputs[index + offset].disabled:
+                offset = offset + 1
+            all_inputs[index+offset].focus()
+
+    for el in all_inputs:
+        el.addEventListener("keyup", next_input)
+    document.addEventListener("backbutton", commit_tree, False);
+    updateSize()
+this.on('mount', init)
+
+</script>
+
+</survey-list>

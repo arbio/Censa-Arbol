@@ -1,0 +1,11 @@
+node_modules/
+.direnv/
+*.log
+*.pyc
+*.swp
+*.swo
+bin/
+dist/
+yarn.lock
+package.json
+chcp*

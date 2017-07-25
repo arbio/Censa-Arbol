@@ -1,0 +1,42 @@
+<!doctype html>
+<meta charset="utf-8">
+<head>
+    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1, user-scalable=no"/>
+    <link rel="stylesheet" href="css/blaze@3.2.2.css">
+</head>
+<style>
+    body {
+        font-size: 1.2em;
+        user-select: none;
+        -webkit-user-select: none;
+        height: 100vh;
+    }
+</style>
+<body>
+
+    <script src="lib/csv.js"></script>
+    <script src="lib/converter.js"></script>
+
+    <survey-list></survey-list>
+
+    <script src="lib/browser-polyfill.min.js"></script>
+    <!-- ^^ This is only necessary for very old browser ^^ (such as Webkit1) -->
+
+    <script src="lib/baselib.js"></script>
+    <script src="lib/riot.min.js"></script>
+
+    <!-- Precompiled riot tags (either activate these or the next group) -->
+    <script src="home.js"></script>
+
+    <!-- Embedded compiler -->
+    <!--script src="lib/rapydscript.js"></script-->
+    <!-- script type="riot/tag" data-src="home.tag.html"></script -->
+
+    <script src="cordova.js"></script>
+
+    <script type="text/javascript">
+        window.onload = function() {
+            window.tags = riot.mount('*')
+        }
+    </script>
+</body>
