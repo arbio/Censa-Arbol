@@ -5,7 +5,7 @@
             <!--div ref="spacer"></div-->
 
             <div if={ about }>
-                <div class="c-overlay"></div>
+                <div class="c-overlay" onclick={ hide_about }></div>
                 <div class="o-modal c-text">
                   <div class="c-card u-centered">
                     <header class="c-card__header">
@@ -15,27 +15,44 @@
                       Censa Árbol es Software Libre y puede ser aprovechado bajo los términos de la licencia GNU GPLv3.
                     </div>
                     <footer class="c-card__footer">
-                      <div class="u-small">Copyright © 2017<br>Equipo de R&D SomosAzucar.Org<br>
+                      <div class="u-small">Copyright © 2017<br>Equipo de I+D SomosAzucar.Org<br>
                       Bajo encargo de ArbioPeru.Org</div>
+                      <br>
                       <button type="button" onclick={ hide_about } class="c-button c-button--brand">OK</button>
+                      <br><br>
+                      <button type="button" onclick={ show_db } class="c-button c-button--warning">Base de Datos</button>
+                    </footer>
+                  </div>
+                </div>
+            </div>
+
+            <div if={ db_diag }>
+                <div class="c-overlay" onclick={ hide_db }></div>
+                <div class="o-modal c-text">
+                  <div class="c-card u-centered">
+                    <header class="c-card__header">
+                      <h2 class="c-heading">Base de Datos</h2>
+                    </header>
+                    <div class="c-card__body">
+                      { len(trees) } registros
+                    </div>
+                    <footer class="c-card__footer">
+                      <br>
+                      <button type="button" onclick={ reset_db } class="c-button c-button--error">RESETEAR BASE DE DATOS</button>
+                      <br><br>
+                      <button type="button" onclick={ hide_db } class="c-button c-button--brand">Cancelar</button>
                     </footer>
                   </div>
                 </div>
             </div>
 
             <div if={ selector_especies }>
-                <div class="c-overlay"></div>
+                <div class="c-overlay" onclick={ hide_selector_especies }></div>
                 <div class="o-modal c-text">
                   <div class="c-card--menu u-centered">
-                    <header class="c-card__header">
-                      <h2 class="c-heading">Especies</h2>
-                    </header>
                     <div class="c-card__body o-panel">
-                        <div each={ especie in especies } if={ especie.especie } class="c-card__item" data-fam={ especie.familia } data-cien={ especie.cientifico } onclick={ set_especie }>{ especie.especie }</div>
+                        <div each={ especie in sorted_especies } if={ especie } class="c-card__item" data-fam={ especies[especie].familia } data-cien={ especies[especie].cientifico } onclick={ set_especie }>{ especie }</div>
                     </div>
-                    <footer class="c-card__footer">
-                      <button type="button" onclick={ hide_selector_especies } class="c-button c-button--brand">Cancelar</button>
-                    </footer>
                   </div>
                 </div>
             </div>
@@ -225,6 +242,7 @@ for tree in tag.trees:
     else:
         tag.trees.splice(tag.trees.indexOf(tree))
 tag.especies = especies
+tag.sorted_especies = sorted(list(especies))
 converter = new UtmConverter()
 
 # Model
@@ -258,10 +276,11 @@ class TreeRecord:
 
     def commit(self):
         tag.trees[self.id - 1] = self.data
-        if self.data['especie'] not in tag.especies:
+        if self.data['especie'] is not '' and self.data['especie'] not in tag.especies:
             tag.especies[self.data['especie']] = { 'especie': self.data['especie'],
                                    'cientifico': self.data['cientifico'],
                                    'familia' : self.data['familia'] }
+            tag.sorted_especies = sorted(list(especies))
 
     def updateUtm(self):
         utmCoords = converter.toUtm (
@@ -282,13 +301,14 @@ class TreeRecord:
         print (ee.message)
 
     def drop(self):
-        resetFormValues()
-        getFormValues(tag.selected_tree)
-        save_db()
-        tag.adding_tree = False
-        clearWatch(tag.selected_tree)
-        del tag.selected_tree
-        tag.update()
+        if confirm('BORRAR registro #' + tag.selected_tree.id):
+            resetFormValues()
+            getFormValues(tag.selected_tree)
+            save_db()
+            tag.adding_tree = False
+            clearWatch(tag.selected_tree)
+            del tag.selected_tree
+            tag.update()
 
 
 TreeRecord.count = len(tag.trees) 
@@ -574,6 +594,35 @@ def hide_about():
     tag.about = False
     tag.update()
 this.hide_about = hide_about
+
+def show_db():
+    tag.about = False
+    tag.db_diag = True
+    tag.update()
+this.show_db = show_db
+
+def hide_db():
+    tag.db_diag = False
+    tag.update()
+this.hide_db = hide_db
+
+def reset_db():
+    tag.db_diag = False
+    if confirm('Se vaciará la base de datos, seguro?'):
+        filename = "censa_arbol_db"
+        if window.cordova: 
+            date = new Date()
+            datestring = date.toISOString().replace(/-/g, '').replace(/:/g,'').slice(0,15)
+            uri = OutputUri + filename + '-' + datestring + '.csv'
+            def success():
+                console.log('Saved.')
+            def error(ee):
+                alert(ee)
+            fileStorage.writeToUri(success, error, uri, csv.encode(tag.trees) )
+        tag.trees = []
+        localStorage.trees = JSON.stringify(tag.trees)
+        tag.update()
+this.reset_db = reset_db
 
 def hide_selector_especies():
     tag.selector_especies = False
