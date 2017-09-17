@@ -119,11 +119,11 @@
                     <input ref="long" onchange={ selected_tree.updateUtm } class="c-input c-field u-small" placeholder="Longitud" />
                     </div>
 
-                    <div class="c-card__item c-input-group o-field">
-                    <input ref="utm_x" class="c-input c-field u-small" placeholder="Utm X" disabled />
-                    <input ref="utm_y" class="c-input c-field u-small" placeholder="Utm Y" disabled />
-                    <input ref="utm_zone" class="c-input c-field u-small" placeholder="Zona Utm" disabled />
-                    <input ref="utm_south" class="c-input c-field u-small" placeholder="Hemisferio" disabled />
+                    <div if={ selected_tree } class="c-card__item c-input-group o-field">
+                    <input ref="utm_x" onchange={ selected_tree.updateLatLong } class="c-input c-field u-small" placeholder="Utm X" disabled />
+                    <input ref="utm_y" onchange={ selected_tree.updateLatLong } class="c-input c-field u-small" placeholder="Utm Y" disabled />
+                    <input ref="utm_zone" onchange={ selected_tree.updateLatLong } class="c-input c-field u-small" placeholder="Zona Utm" disabled />
+                    <input ref="utm_south" onchange={ selected_tree.updateLatLong } class="c-input c-field u-small" placeholder="Hemisferio" disabled />
                     </div>
 
                     <div class="c-card__item c-input-group o-field">
@@ -285,10 +285,21 @@ class TreeRecord:
     def updateUtm(self):
         utmCoords = converter.toUtm (
             {'coord':[float(tag.refs.long.value) , float(tag.refs.lat.value)] })
-        tag.refs.utm_x.value = tag.selected_tree.data['utm_x'] = utmCoords.coord.x
-        tag.refs.utm_y.value =  tag.selected_tree.data['utm_y'] = utmCoords.coord.y
-        tag.refs.utm_zone.value =  tag.selected_tree.data['utm_zone'] = utmCoords.zone
-        tag.refs.utm_south.value =  tag.selected_tree.data['utm_south'] = 'S' if  utmCoords.isSouthern else 'N'
+        tag.refs.utm_x.value = utmCoords.coord.x
+        tag.refs.utm_y.value =  utmCoords.coord.y
+        tag.refs.utm_zone.value = utmCoords.zone
+        tag.refs.utm_south.value = 'S' if  utmCoords.isSouthern else 'N'
+
+    def updateLatLong(self):
+        utmCoords = {
+            'coord': { 'x': tag.refs.utm_x.value,
+                       'y': tag.refs.utm_y.value },
+            'zone': tag.refs.utm_zone.value,
+            'isSouthern': True if tag.refs.utm_south.value=='S' else False
+            }
+        llCoords = converter.toWgs(utmCoords)
+        tag.refs.long.value = llCoords.coord.longitude
+        tag.refs.lat.value = llCoords.coord.latitude
 
     def succeed(self, position):
         self = tag.selected_tree
@@ -321,10 +332,7 @@ this.about = False
 def add_tree():
     tag.adding_tree = True
     this.refs.careful_toggle.checked = False
-    if tag.selected_tree is undefined:
-        tag.selected_tree = TreeRecord()
-    else:
-        tag.selected_tree = TreeRecord()
+    tag.selected_tree = TreeRecord()
 this.add_tree = add_tree
 
 def calc_dia():
@@ -364,12 +372,20 @@ def toggle_gps(e):
         clearWatch(tag.selected_tree)
         tag.refs.long.disabled = False
         tag.refs.lat.disabled = False
+        tag.refs.utm_x.disabled = False
+        tag.refs.utm_y.disabled = False
+        tag.refs.utm_zone.disabled = False
+        tag.refs.utm_south.disabled = False
     elif tag.selected_tree.gps_state=='Manual':
         if confirm('Capturar nueva ubicación?'):
             tag.selected_tree.gps_state = 'Auto'
             tag.selected_tree.start_gps()
             tag.refs.long.disabled = True
             tag.refs.lat.disabled = True
+            tag.refs.utm_x.disabled = True
+            tag.refs.utm_y.disabled = True
+            tag.refs.utm_zone.disabled = True
+            tag.refs.utm_south.disabled = True
     tag.update()
 tag.toggle_gps = toggle_gps
 
@@ -512,14 +528,14 @@ def failPic(ee):
 
 def getFormValues(tree):
     tree.data['id'] = tree.id
-    tree.data['especie'] = tag.refs.especie.value
-    tree.data['cientifico'] = tag.refs.cientifico.value
-    tree.data['familia'] = tag.refs.familia.value
-    tree.data['codigo'] = tag.refs.codigo.value
-    tree.data['alt'] = tag.refs.alt.value
-    tree.data['dia'] = tag.refs.dia.value
-    tree.data['circ'] = tag.refs.circ.value
-    tree.data['fenologia'] = tag.refs.fenologia.value
+    tree.data['especie'] = str(tag.refs.especie.value)
+    tree.data['cientifico'] = str(tag.refs.cientifico.value)
+    tree.data['familia'] = str(tag.refs.familia.value)
+    tree.data['codigo'] = str(tag.refs.codigo.value)
+    tree.data['alt'] = str(tag.refs.alt.value)
+    tree.data['dia'] = str(tag.refs.dia.value)
+    tree.data['circ'] = str(tag.refs.circ.value)
+    tree.data['fenologia'] = str(tag.refs.fenologia.value)
     options = []
     for item in tag.refs.relevancia.selectedOptions:
         options.push (item.value)
@@ -528,15 +544,15 @@ def getFormValues(tree):
     for item in tag.refs.otros.selectedOptions:
         options.push (item.value)
     tree.data['otros'] = str(options)
-    tree.data['notas'] = tag.refs.notas.value
-    tree.data['obs'] = tag.refs.obs.value
-    tree.data['fechahora'] = tag.refs.fechahora.value
-    tree.data['lat'] = tag.refs.lat.value
-    tree.data['long'] = tag.refs.long.value
-    tree.data['utm_x'] = tag.refs.utm_x.value
-    tree.data['utm_y'] = tag.refs.utm_y.value
-    tree.data['utm_zone'] = tag.refs.utm_zone.value
-    tree.data['utm_south'] = tag.refs.utm_south.value
+    tree.data['notas'] = str(tag.refs.notas.value)
+    tree.data['obs'] = str(tag.refs.obs.value)
+    tree.data['fechahora'] = str(tag.refs.fechahora.value)
+    tree.data['lat'] = str(tag.refs.lat.value or 0)
+    tree.data['long'] = str(tag.refs.long.value or 0)
+    tree.data['utm_x'] = str(tag.refs.utm_x.value or 0)
+    tree.data['utm_y'] = str(tag.refs.utm_y.value or 0)
+    tree.data['utm_zone'] = str(tag.refs.utm_zone.value or 0)
+    tree.data['utm_south'] = str(tag.refs.utm_south.value or '')
     tree.data['fotos'] = JSON.parse(tag.refs.fotos.value or [])
 
 def resetFormValues():
