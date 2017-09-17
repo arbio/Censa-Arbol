@@ -77,7 +77,7 @@ if (!TreeRecord.prototype.start_gps.__argnames__) Object.defineProperties(TreeRe
 });
 TreeRecord.prototype.commit = function commit() {
     var self = this;
-    (ρσ_expr_temp = tag.trees)[ρσ_bound_index(self.id - 1, ρσ_expr_temp)] = self.data;
+    (ρσ_expr_temp = tag.trees)[ρσ_bound_index(self.id - 1, ρσ_expr_temp)] = sortObject(self.data);
     if (self.data["especie"] !== "" && !(ρσ_in(self.data["especie"], tag.especies))) {
         (ρσ_expr_temp = tag.especies)[ρσ_bound_index(self.data["especie"], ρσ_expr_temp)] = (function(){
             var ρσ_d = {};

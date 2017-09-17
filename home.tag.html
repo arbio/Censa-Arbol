@@ -275,7 +275,7 @@ class TreeRecord:
                                     "enableHighAccuracy" : True } )
 
     def commit(self):
-        tag.trees[self.id - 1] = self.data
+        tag.trees[self.id - 1] = sortObject(self.data)
         if self.data['especie'] is not '' and self.data['especie'] not in tag.especies:
             tag.especies[self.data['especie']] = { 'especie': self.data['especie'],
                                    'cientifico': self.data['cientifico'],
