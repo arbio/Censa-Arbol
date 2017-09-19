@@ -35,13 +35,6 @@
     <script src="cordova.js"></script>
 
     <script type="text/javascript">
-		// Used to sort dictionaries and avoid https://github.com/avoidwork/csv.js/issues/7
-		function sortObject(obj) {
-			return Object.keys(obj).sort().reduce(function (result, key) {
-				result[key] = obj[key];
-				return result;
-			}, {});
-		}
         window.onload = function() {
             window.tags = riot.mount('*')
         }
