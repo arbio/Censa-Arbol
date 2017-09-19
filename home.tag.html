@@ -9,7 +9,7 @@
                 <div class="o-modal c-text">
                   <div class="c-card u-centered">
                     <header class="c-card__header">
-                      <h2 class="c-heading">Censa Arbol 2</h2>
+                      <h2 class="c-heading">Censa Arbol 2.1</h2>
                     </header>
                     <div class="c-card__body">
                       Censa Árbol es Software Libre y puede ser aprovechado bajo los términos de la licencia GNU AGPLv3.
@@ -305,7 +305,8 @@ class TreeRecord:
         self = tag.selected_tree
         tag.refs.lat.value = position.coords.latitude
         tag.refs.long.value = position.coords.longitude
-        self.updateUtm()
+        if self is not undefined:
+            self.updateUtm()
         color_placeholders()
 
     def error(self, ee):
@@ -319,8 +320,8 @@ class TreeRecord:
             resetFormValues()
             tag.trying_to_exit = False
             tag.adding_tree = False
-            del tag.selected_tree
             save_db(False)
+            del tag.selected_tree
             tag.update()
 
 
