@@ -78,7 +78,7 @@
             <div ref="tree_list" hide={ adding_tree } class="o-panel" style="bottom: 3em; top: 3.95em">
                 <div class="c-card" style="margin-left: auto; margin-right: auto; width: 99%">
                 <div class="c-card__item--brand c-text u-high" each={ tree in trees } if={ tree.codigo } style="padding: 6px; margin-top:5px">
-                <button data-id={ tree.id } onclick={ load_tree } class="c-button c-button--success u-high u-large" style="width: 3em;">#{ tree.id }</button>
+                <button data-id={ trees.indexOf(tree) } onclick={ load_tree } class="c-button c-button--success u-high u-large" style="width: 3em;">#{ trees.indexOf(tree) + 1 }</button>
                 &nbsp;{ tree.codigo }&nbsp;
                 <span class="c-badge c-badge--ghost c-badge--rounded" if={ tree.especie }>{ tree.especie }</span>&nbsp;
                 <span class="c-badge c-badge--ghost c-badge--rounded" if={ tree.dia }>&#x2300; { tree.dia }cm</span>
@@ -91,15 +91,19 @@
 
                     <div class="c-card__item u-centered" style="margin-top: 5px">
                     <button if={ selected_tree } ref="picButton" id="picButton" onclick={ take_pic } class="c-button { c-button--success: need_pic() } c-button--rounded u-large u-high">{ len(selected_tree.data['fotos']) } fotos - Tomar Nueva</button>
+                    <br />
+                    <br if={ trying_to_exit } />
+                    <button if={ trying_to_exit } class="c-button c-button--error c-button--rounded u-large u-high" style="width: 80%" onclick={ drop_selected_tree }>¿Abandonar registro?</button>
+                    <br if={ trying_to_exit } />
                     <div class="c-text u-small">
-                    
+ 
                     </div>
                     <div ref='thumbs'>
                     </div>
                     </div>
 
                     <div class="c-card__item c-input-group o-field">
-                    <input ref="id" class="c-input c-field u-small" if={ selected_tree } value="Registro # { selected_tree.id }" disabled />
+                    <input ref="id" class="c-input c-field u-small" if={ selected_tree } value="Registro # { get_tree_index(selected_tree) }" disabled />
                     <input ref="codigo" class="c-input c-field" placeholder="Código" />
                     </div>
 
@@ -115,8 +119,8 @@
                     </div>
 
                     <div if={ selected_tree } class="c-card__item c-input-group o-field">
-                    <input ref="lat"  onchange={ selected_tree.updateUtm } class="c-input c-field u-small" placeholder="Latitud" />
-                    <input ref="long" onchange={ selected_tree.updateUtm } class="c-input c-field u-small" placeholder="Longitud" />
+                    <input ref="lat"  onchange={ selected_tree.updateUtm } class="c-input c-field u-small" placeholder="Latitud"  disabled />
+                    <input ref="long" onchange={ selected_tree.updateUtm } class="c-input c-field u-small" placeholder="Longitud" disabled />
                     </div>
 
                     <div if={ selected_tree } class="c-card__item c-input-group o-field">
@@ -175,7 +179,7 @@
                     <div class="c-card__item c-input-group c-input-group o-field">
                     <br>
                     <label class="c-toggle c-toggle--error" style="width: 100%; padding: 1em;">
-                      <input ref="careful_toggle" type="checkbox" onchange={ update }>
+                      <input ref="careful_toggle" type="checkbox" onchange={ update_and_scroll }>
                       <div class="c-toggle__track">
                         <div class="c-toggle__handle"></div>
                       </div>
@@ -183,12 +187,12 @@
                     </label>
                     <br>
                     </div>
-                    
-                    <div if={ this.refs.careful_toggle.checked } class="c-card__item u-centered">
+
+                    <div ref='careful_section' if={ this.refs.careful_toggle.checked } class="c-card__item u-centered">
                     <br />
                     <button if={ selected_tree } class="c-button { c-button--success : selected_tree.gps_state=='Auto' } { c-button--error : selected_tree.gps_state=='Manual' } c-button--rounded u-large u-high" style="width: 80%" onclick={ toggle_gps }>GPS : { selected_tree.gps_state }</button>
                     <br /> <br> <hr /> <br />
-                    <button if={ selected_tree } class="c-button c-button--error c-button--rounded u-large u-high" style="width: 80%" onclick={ selected_tree.drop }>BORRAR REGISTRO</button>
+                    <button if={ selected_tree } class="c-button c-button--error c-button--rounded u-large u-high" style="width: 80%" onclick={ drop_selected_tree }>BORRAR REGISTRO</button>
                     <br /><br />
                     </div>
 
@@ -228,7 +232,7 @@
 
 tag = this
 if localStorage.getItem('trees') is not None:
-    tag.trees = JSON.parse(localStorage.getItem('trees'))
+    tag.trees = list_wrap(JSON.parse(localStorage.getItem('trees')))
 else:
     tag.trees = []
 
@@ -239,8 +243,6 @@ for tree in tag.trees:
             especies[tree.especie] = { 'especie': tree.especie,
                                        'cientifico': tree.cientifico,
                                        'familia' : tree.familia }
-    else:
-        tag.trees.splice(tag.trees.indexOf(tree))
 tag.especies = especies
 tag.sorted_especies = sorted(list(especies))
 converter = new UtmConverter()
@@ -253,11 +255,9 @@ class TreeRecord:
 
     def __init__(self, id=None):
         if id is not None:
-            self.id = id
-            self.data = tag.trees[id - 1]
+            self.data = tag.trees[id]
             return self
-        self.id = TreeRecord.count + 1
-        TreeRecord.count += 1
+        self.id = len(tag.trees)
         self.data = {}
         self.data['fotos'] = []
 
@@ -268,14 +268,14 @@ class TreeRecord:
 
     def start_gps(self):
         self.gps_state = 'Auto'
-        self.watch = navigator.geolocation.watchPosition( self.succeed, 
+        window.watch = navigator.geolocation.watchPosition( self.succeed,
                                     self.error, {
                                     "maximumAge" : 50000,
-                                    "timeout" : 20000,
+                                    "timeout" : 30000,
                                     "enableHighAccuracy" : True } )
 
     def commit(self):
-        tag.trees[self.id - 1] = self.data
+        tag.trees[self.id] = self.data
         if self.data['especie'] is not '' and self.data['especie'] not in tag.especies:
             tag.especies[self.data['especie']] = { 'especie': self.data['especie'],
                                    'cientifico': self.data['cientifico'],
@@ -303,8 +303,8 @@ class TreeRecord:
 
     def succeed(self, position):
         self = tag.selected_tree
-        tag.refs.lat.value = self.data['lat'] = position.coords.latitude
-        tag.refs.long.value = self.data['long'] = position.coords.longitude
+        tag.refs.lat.value = position.coords.latitude
+        tag.refs.long.value = position.coords.longitude
         self.updateUtm()
         color_placeholders()
 
@@ -312,17 +312,19 @@ class TreeRecord:
         print (ee.message)
 
     def drop(self):
-        if confirm('BORRAR registro #' + tag.selected_tree.id):
-            resetFormValues()
-            getFormValues(tag.selected_tree)
-            save_db()
-            tag.adding_tree = False
+        if confirm('Borrar registro #' + (int(tag.trees.indexOf(self.data)) + 1)):
             clearWatch(tag.selected_tree)
+            if self.data in tag.trees:
+                tag.trees.remove(self.data)
+            resetFormValues()
+            tag.trying_to_exit = False
+            tag.adding_tree = False
             del tag.selected_tree
+            save_db(False)
             tag.update()
 
 
-TreeRecord.count = len(tag.trees) 
+TreeRecord.count = len(tag.trees)
 
 # Controller
 
@@ -352,8 +354,8 @@ this.set_especie = set_especie
 
 def download_data():
     filename = "censa_arbol_db.csv"
-    if window.cordova: 
-        uri = OutputUri + filename 
+    if window.cordova:
+        uri = OutputUri + filename
         def success():
             console.log('Saved.')
         def error(ee):
@@ -398,7 +400,7 @@ def save_db(save_selected=True):
         alert(ee)
     if window.cordova:
         filename = "censa_arbol_log.csv"
-        uri = OutputUri + filename 
+        uri = OutputUri + filename
         fileStorage.appendToUri(success, error, uri, csv.encode([tag.selected_tree.data], ',', False) + "\n")
     localStorage.trees = JSON.stringify(tag.trees)
     download_data()
@@ -408,6 +410,7 @@ def commit_tree(e):
         deny_pic_button()
         tag.refs.codigo.focus()
         return
+    tag.trying_to_exit = False
     getFormValues(tag.selected_tree)
     resetFormValues()
     save_db()
@@ -417,14 +420,37 @@ def commit_tree(e):
     tag.update()
 this.commit_tree = commit_tree
 
+def drop_selected_tree(event):
+    if this.selected_tree is not undefined:
+        if this.selected_tree.data in tag.trees:
+            this.selected_tree.drop()
+        else:
+            resetFormValues()
+            tag.trying_to_exit = False
+            tag.adding_tree = False
+            del tag.selected_tree
+            tag.update()
+this.drop_selected_tree = drop_selected_tree
+
+def update_and_scroll(ev):
+    tag.update()
+    tag.refs.careful_section.scrollIntoView()
+this.update_and_scroll = update_and_scroll
+
+def get_tree_index(tree):
+    if tree.data in tag.trees:
+        # editing a previous record
+        return tag.trees.indexOf(tree.data) + 1
+    else:
+        return len(tag.trees) + 1  # new record
+this.get_tree_index = get_tree_index
+
 def load_tree(event):
     id = event.target.getAttribute('data-id')
     tree = tag.selected_tree = TreeRecord(id)
     tag.adding_tree = True
     tree.gps_state = 'Manual'
     tag.update()
-    tag.refs.lat.disabled = False
-    tag.refs.long.disabled = False
     tag.refs.careful_toggle.checked = False
     tag.refs.especie.value = tree.data['especie'] or ''
     tag.refs.cientifico.value = tree.data['cientifico'] or ''
@@ -461,13 +487,17 @@ this.load_tree = load_tree
 
 def deny_pic_button():
     orig_color = tag.refs.picButton.style.backgroundColor
-    tag.refs.picButton.style.backgroundColor = 'red'
+    tag.refs.picButton.style.backgroundColor = 'orange'
     orig_text = tag.refs.picButton.innerHTML
-    tag.refs.picButton.innerHTML = "Asigna un código"
+    tag.refs.picButton.innerHTML = "Recuerda asignar código"
+    tag.trying_to_exit = True
+    tag.update()
     def restore():
         tag.refs.picButton.style.backgroundColor = orig_color
         tag.refs.picButton.innerHTML = orig_text
         document.removeEventListener("input", restore)
+        tag.trying_to_exit = False
+        tag.update()
     document.addEventListener("input", restore)
 
 def take_pic(e):
@@ -527,7 +557,6 @@ def failPic(ee):
     alert(str(ee))
 
 def getFormValues(tree):
-    tree.data['id'] = tree.id
     tree.data['especie'] = str(tag.refs.especie.value)
     tree.data['cientifico'] = str(tag.refs.cientifico.value)
     tree.data['familia'] = str(tag.refs.familia.value)
@@ -578,8 +607,8 @@ def resetFormValues():
     tag.refs.fotos.value = ''
 
 def clearWatch(tree):
-    if tree.watch is not undefined:
-        navigator.geolocation.clearWatch(tree.watch)
+    if window.watch is not undefined:
+        navigator.geolocation.clearWatch(window.watch)
     if tree.timer is not undefined:
         clearInterval(tree.timer)
 
@@ -624,9 +653,9 @@ this.hide_db = hide_db
 
 def reset_db():
     tag.db_diag = False
-    if confirm('Se vaciará la base de datos, seguro?'):
+    if confirm('Se vaciará la base de datos, ¿seguro?'):
         filename = "censa_arbol_db"
-        if window.cordova: 
+        if window.cordova:
             date = new Date()
             datestring = date.toISOString().replace(/-/g, '').replace(/:/g,'').slice(0,15)
             uri = OutputUri + filename + '-' + datestring + '.csv'

@@ -1,8 +1,8 @@
-riot.tag2('survey-list', '<main class="c-text o-grid o-grid--no-gutter o-panel"> <div class="o-grid__cell o-panel-container" style="padding:0px"> <div if="{about}"> <div class="c-overlay" onclick="{hide_about}"></div> <div class="o-modal c-text"> <div class="c-card u-centered"> <header class="c-card__header"> <h2 class="c-heading">Censa Arbol 1</h2> </header> <div class="c-card__body"> Censa Árbol es Software Libre y puede ser aprovechado bajo los términos de la licencia GNU AGPLv3. </div> <footer class="c-card__footer"> <div class="u-small">Copyright © 2017<br>Equipo de I+D SomosAzucar.Org<br> Bajo encargo de ArbioPeru.Org</div> <br> <button type="button" onclick="{hide_about}" class="c-button c-button--brand">OK</button> <br><br> <button type="button" onclick="{show_db}" class="c-button c-button--warning">Base de Datos</button> </footer> </div> </div> </div> <div if="{db_diag}"> <div class="c-overlay" onclick="{hide_db}"></div> <div class="o-modal c-text"> <div class="c-card u-centered"> <header class="c-card__header"> <h2 class="c-heading">Base de Datos</h2> </header> <div class="c-card__body"> {len(trees)} registros </div> <footer class="c-card__footer"> <br> <button type="button" onclick="{reset_db}" class="c-button c-button--error">RESETEAR BASE DE DATOS</button> <br><br> <button type="button" onclick="{hide_db}" class="c-button c-button--brand">Cancelar</button> </footer> </div> </div> </div> <div if="{selector_especies}"> <div class="c-overlay" onclick="{hide_selector_especies}"></div> <div class="o-modal c-text"> <div class="c-card--menu u-centered"> <div class="c-card__body o-panel"> <div each="{especie in sorted_especies}" if="{especie}" class="c-card__item" data-fam="{especies[especie].familia}" data-cien="{especies[especie].cientifico}" onclick="{set_especie}">{especie}</div> </div> </div> </div> </div> <nav class="c-nav c-nav--top c-nav--inline"> <div class="c-text--loud c-nav__content u-large" style="padding-left:10px; padding-right: 0px"> <div onclick="{show_about}" style="font-family: monospace"> <img src="censarbol.png" style="vertical-align:middle; height: 2.9em">Censa Árbol </div> </div> <div class="c-nav__content c-nav__item--right c-text--loud" style="padding-left:0px; padding-right: 10px"> <button hide="{adding_tree}" class="c-button c-button--info u-xlarge c-text c-text--loud" style="color: black; margin-top: .2em" onclick="{add_tree}">&nbsp;+&nbsp;</button> <button show="{adding_tree}" class="c-button c-button--warning u-xlarge c-text" style="color:black; margin-top: .2em" onclick="{commit_tree}">OK</button> </div> </nav> <nav class="c-nav c-nav--bottom c-nav--inline u-centered" hide="{adding_tree}"> <div class="c-nav__content c-text u-small"> {len(trees)} registros </div> </nav> <div ref="tree_list" hide="{adding_tree}" class="o-panel" style="bottom: 3em; top: 3.95em"> <div class="c-card" style="margin-left: auto; margin-right: auto; width: 99%"> <div class="c-card__item--brand c-text u-high" each="{tree in trees}" if="{tree.codigo}" style="padding: 6px; margin-top:5px"> <button data-id="{tree.id}" onclick="{load_tree}" class="c-button c-button--success u-high u-large" style="width: 3em;">#{tree.id}</button> &nbsp;{tree.codigo}&nbsp; <span class="c-badge c-badge--ghost c-badge--rounded" if="{tree.especie}">{tree.especie}</span>&nbsp; <span class="c-badge c-badge--ghost c-badge--rounded" if="{tree.dia}">&#x2300; {tree.dia}cm</span> </div> </div> </div> <div ref="tree_form" show="{adding_tree}" class="o-panel" style="top: 3.95em"> <div class="c-card o-form-element"> <div class="c-card__item u-centered" style="margin-top: 5px"> <button if="{selected_tree}" ref="picButton" id="picButton" onclick="{take_pic}" class="c-button {c-button--success: need_pic()} c-button--rounded u-large u-high">{len(selected_tree.data[\'fotos\'])} fotos - Tomar Nueva</button> <div class="c-text u-small"> </div> <div ref="thumbs"> </div> </div> <div class="c-card__item c-input-group o-field"> <input ref="id" class="c-input c-field u-small" if="{selected_tree}" riot-value="Registro # {selected_tree.id}" disabled> <input ref="codigo" class="c-input c-field" placeholder="Código"> </div> <div class="c-card__item c-input-group__stacked o-field"> <div class="c-input-group"> <div class="o-field"> <input ref="especie" class="c-input c-field" placeholder="Nombre Común"> </div> <button class="c-button u-small" onclick="{show_selector_especies}">Buscar...</button> </div> <input ref="cientifico" class="c-input c-field" placeholder="Nombre Científico"> <input ref="familia" class="c-input c-field" placeholder="Familia"> </div> <div if="{selected_tree}" class="c-card__item c-input-group o-field"> <input ref="lat" onchange="{selected_tree.updateUtm}" class="c-input c-field u-small" placeholder="Latitud"> <input ref="long" onchange="{selected_tree.updateUtm}" class="c-input c-field u-small" placeholder="Longitud"> </div> <div if="{selected_tree}" class="c-card__item c-input-group o-field"> <input ref="utm_x" onchange="{selected_tree.updateLatLong}" class="c-input c-field u-small" placeholder="Utm X" disabled> <input ref="utm_y" onchange="{selected_tree.updateLatLong}" class="c-input c-field u-small" placeholder="Utm Y" disabled> <input ref="utm_zone" onchange="{selected_tree.updateLatLong}" class="c-input c-field u-small" placeholder="Zona Utm" disabled> <input ref="utm_south" onchange="{selected_tree.updateLatLong}" class="c-input c-field u-small" placeholder="Hemisferio" disabled> </div> <div class="c-card__item c-input-group o-field"> <input ref="circ" class="c-input c-field" oninput="{calc_dia}" placeholder="Circ (cm)" type="number"> <input ref="dia" class="c-input c-field auto-field" placeholder="Diá (cm)" disabled type="number"> <input ref="alt" class="c-input c-field" placeholder="Altura (m)" type="number"> </div> <div class="c-card__item c-input-group o-field"> <select onclick="" ref="fenologia" class="c-input c-field" placeholder="Fenología"> <option value="" selected>Fenología</option> <option value="semillación">Semillación</option> <option value="floración">Floración</option> <option value="fructificación">Fructificación</option> <option value="caída_de_hojas">Caída de hojas</option> </select> <input ref="fechahora" riot-value="{new Date().toLocaleString()}" class="c-input c-field u-small u-centered" placeholder="Fecha / Hora" disabled> </div> <div class="head-field c-card__item c-input-group o-field"> <div class="head-label c-label c-field u-centered u-small">Relevancia</div> <div class="head-label c-label c-field u-centered u-small">Otros</div> </div> <div class="c-card__item c-input-group o-field" style="padding-top:0px"> <select multiple ref="relevancia" class="c-input c-field"> <option value="medicinal">Medicinal</option> <option value="maderable">Maderable</option> <option value="ornamental">Ornamental</option> <option value="frutal">Frutal</option> <option value="sagrado">Sagrado</option> <option value="majestuoso">Majestuoso</option> <option value="fauna">Fauna Silvestre</option> </select> <select multiple ref="otros" class="c-input c-field"> <option value="nidos">Presencia de Nidos</option> <option value="regeneracion">Regeneración Natural</option> <option value="hongos">Presencia de Hongos</option> <option value="pudricion_fuste">Pudrición del Fuste</option> </select> </div> <div class="c-card__item c-input-group o-field"> <textarea ref="obs" class="c-input c-field" placeholder="Observaciones"></textarea> <textarea ref="notas" class="c-input c-field" placeholder="Notas"></textarea> <textarea ref="fotos" class="c-input c-field" placeholder="Fotos" style="display:none"></textarea> </div> <div class="c-card__item c-input-group c-input-group o-field"> <br> <label class="c-toggle c-toggle--error" style="width: 100%; padding: 1em;"> <input ref="careful_toggle" type="checkbox" onchange="{update}"> <div class="c-toggle__track"> <div class="c-toggle__handle"></div> </div> Opciones avanzadas </label> <br> </div> <div if="{this.refs.careful_toggle.checked}" class="c-card__item u-centered"> <br> <button if="{selected_tree}" class="c-button {c-button--success : selected_tree.gps_state==\'Auto\'} {c-button--error : selected_tree.gps_state==\'Manual\'} c-button--rounded u-large u-high" style="width: 80%" onclick="{toggle_gps}">GPS : {selected_tree.gps_state}</button> <br> <br> <hr> <br> <button if="{selected_tree}" class="c-button c-button--error c-button--rounded u-large u-high" style="width: 80%" onclick="{selected_tree.drop}">BORRAR REGISTRO</button> <br><br> </div> </div> </div> </div> </main>', 'survey-list .auto-field::-webkit-input-placeholder,[data-is="survey-list"] .auto-field::-webkit-input-placeholder{ color: #96a8b2; } survey-list ::-webkit-input-placeholder,[data-is="survey-list"] ::-webkit-input-placeholder{ color: white; } survey-list .c-input,[data-is="survey-list"] .c-input{ text-align: center; background-color: #e5eaec; border-color: #96a8b2; } survey-list .head-label,[data-is="survey-list"] .head-label{ color: #96a8b2; padding: 0px !important; border: none; } survey-list .head-field,[data-is="survey-list"] .head-field{ border-bottom: none !important; padding-bottom: 0px; } survey-list #picButton,[data-is="survey-list"] #picButton{ width: 80%; }', '', function(opts) {
+riot.tag2('survey-list', '<main class="c-text o-grid o-grid--no-gutter o-panel"> <div class="o-grid__cell o-panel-container" style="padding:0px"> <div if="{about}"> <div class="c-overlay" onclick="{hide_about}"></div> <div class="o-modal c-text"> <div class="c-card u-centered"> <header class="c-card__header"> <h2 class="c-heading">Censa Arbol 1</h2> </header> <div class="c-card__body"> Censa Árbol es Software Libre y puede ser aprovechado bajo los términos de la licencia GNU AGPLv3. </div> <footer class="c-card__footer"> <div class="u-small">Copyright © 2017<br>Equipo de I+D SomosAzucar.Org<br> Bajo encargo de ArbioPeru.Org</div> <br> <button type="button" onclick="{hide_about}" class="c-button c-button--brand">OK</button> <br><br> <button type="button" onclick="{show_db}" class="c-button c-button--warning">Base de Datos</button> </footer> </div> </div> </div> <div if="{db_diag}"> <div class="c-overlay" onclick="{hide_db}"></div> <div class="o-modal c-text"> <div class="c-card u-centered"> <header class="c-card__header"> <h2 class="c-heading">Base de Datos</h2> </header> <div class="c-card__body"> {len(trees)} registros </div> <footer class="c-card__footer"> <br> <button type="button" onclick="{reset_db}" class="c-button c-button--error">RESETEAR BASE DE DATOS</button> <br><br> <button type="button" onclick="{hide_db}" class="c-button c-button--brand">Cancelar</button> </footer> </div> </div> </div> <div if="{selector_especies}"> <div class="c-overlay" onclick="{hide_selector_especies}"></div> <div class="o-modal c-text"> <div class="c-card--menu u-centered"> <div class="c-card__body o-panel"> <div each="{especie in sorted_especies}" if="{especie}" class="c-card__item" data-fam="{especies[especie].familia}" data-cien="{especies[especie].cientifico}" onclick="{set_especie}">{especie}</div> </div> </div> </div> </div> <nav class="c-nav c-nav--top c-nav--inline"> <div class="c-text--loud c-nav__content u-large" style="padding-left:10px; padding-right: 0px"> <div onclick="{show_about}" style="font-family: monospace"> <img src="censarbol.png" style="vertical-align:middle; height: 2.9em">Censa Árbol </div> </div> <div class="c-nav__content c-nav__item--right c-text--loud" style="padding-left:0px; padding-right: 10px"> <button hide="{adding_tree}" class="c-button c-button--info u-xlarge c-text c-text--loud" style="color: black; margin-top: .2em" onclick="{add_tree}">&nbsp;+&nbsp;</button> <button show="{adding_tree}" class="c-button c-button--warning u-xlarge c-text" style="color:black; margin-top: .2em" onclick="{commit_tree}">OK</button> </div> </nav> <nav class="c-nav c-nav--bottom c-nav--inline u-centered" hide="{adding_tree}"> <div class="c-nav__content c-text u-small"> {len(trees)} registros </div> </nav> <div ref="tree_list" hide="{adding_tree}" class="o-panel" style="bottom: 3em; top: 3.95em"> <div class="c-card" style="margin-left: auto; margin-right: auto; width: 99%"> <div class="c-card__item--brand c-text u-high" each="{tree in trees}" if="{tree.codigo}" style="padding: 6px; margin-top:5px"> <button data-id="{trees.indexOf(tree)}" onclick="{load_tree}" class="c-button c-button--success u-high u-large" style="width: 3em;">#{trees.indexOf(tree) + 1}</button> &nbsp;{tree.codigo}&nbsp; <span class="c-badge c-badge--ghost c-badge--rounded" if="{tree.especie}">{tree.especie}</span>&nbsp; <span class="c-badge c-badge--ghost c-badge--rounded" if="{tree.dia}">&#x2300; {tree.dia}cm</span> </div> </div> </div> <div ref="tree_form" show="{adding_tree}" class="o-panel" style="top: 3.95em"> <div class="c-card o-form-element"> <div class="c-card__item u-centered" style="margin-top: 5px"> <button if="{selected_tree}" ref="picButton" id="picButton" onclick="{take_pic}" class="c-button {c-button--success: need_pic()} c-button--rounded u-large u-high">{len(selected_tree.data[\'fotos\'])} fotos - Tomar Nueva</button> <br> <br if="{trying_to_exit}"> <button if="{trying_to_exit}" class="c-button c-button--error c-button--rounded u-large u-high" style="width: 80%" onclick="{drop_selected_tree}">¿Abandonar registro?</button> <br if="{trying_to_exit}"> <div class="c-text u-small"> </div> <div ref="thumbs"> </div> </div> <div class="c-card__item c-input-group o-field"> <input ref="id" class="c-input c-field u-small" if="{selected_tree}" riot-value="Registro # {get_tree_index(selected_tree)}" disabled> <input ref="codigo" class="c-input c-field" placeholder="Código"> </div> <div class="c-card__item c-input-group__stacked o-field"> <div class="c-input-group"> <div class="o-field"> <input ref="especie" class="c-input c-field" placeholder="Nombre Común"> </div> <button class="c-button u-small" onclick="{show_selector_especies}">Buscar...</button> </div> <input ref="cientifico" class="c-input c-field" placeholder="Nombre Científico"> <input ref="familia" class="c-input c-field" placeholder="Familia"> </div> <div if="{selected_tree}" class="c-card__item c-input-group o-field"> <input ref="lat" onchange="{selected_tree.updateUtm}" class="c-input c-field u-small" placeholder="Latitud" disabled> <input ref="long" onchange="{selected_tree.updateUtm}" class="c-input c-field u-small" placeholder="Longitud" disabled> </div> <div if="{selected_tree}" class="c-card__item c-input-group o-field"> <input ref="utm_x" onchange="{selected_tree.updateLatLong}" class="c-input c-field u-small" placeholder="Utm X" disabled> <input ref="utm_y" onchange="{selected_tree.updateLatLong}" class="c-input c-field u-small" placeholder="Utm Y" disabled> <input ref="utm_zone" onchange="{selected_tree.updateLatLong}" class="c-input c-field u-small" placeholder="Zona Utm" disabled> <input ref="utm_south" onchange="{selected_tree.updateLatLong}" class="c-input c-field u-small" placeholder="Hemisferio" disabled> </div> <div class="c-card__item c-input-group o-field"> <input ref="circ" class="c-input c-field" oninput="{calc_dia}" placeholder="Circ (cm)" type="number"> <input ref="dia" class="c-input c-field auto-field" placeholder="Diá (cm)" disabled type="number"> <input ref="alt" class="c-input c-field" placeholder="Altura (m)" type="number"> </div> <div class="c-card__item c-input-group o-field"> <select onclick="" ref="fenologia" class="c-input c-field" placeholder="Fenología"> <option value="" selected>Fenología</option> <option value="semillación">Semillación</option> <option value="floración">Floración</option> <option value="fructificación">Fructificación</option> <option value="caída_de_hojas">Caída de hojas</option> </select> <input ref="fechahora" riot-value="{new Date().toLocaleString()}" class="c-input c-field u-small u-centered" placeholder="Fecha / Hora" disabled> </div> <div class="head-field c-card__item c-input-group o-field"> <div class="head-label c-label c-field u-centered u-small">Relevancia</div> <div class="head-label c-label c-field u-centered u-small">Otros</div> </div> <div class="c-card__item c-input-group o-field" style="padding-top:0px"> <select multiple ref="relevancia" class="c-input c-field"> <option value="medicinal">Medicinal</option> <option value="maderable">Maderable</option> <option value="ornamental">Ornamental</option> <option value="frutal">Frutal</option> <option value="sagrado">Sagrado</option> <option value="majestuoso">Majestuoso</option> <option value="fauna">Fauna Silvestre</option> </select> <select multiple ref="otros" class="c-input c-field"> <option value="nidos">Presencia de Nidos</option> <option value="regeneracion">Regeneración Natural</option> <option value="hongos">Presencia de Hongos</option> <option value="pudricion_fuste">Pudrición del Fuste</option> </select> </div> <div class="c-card__item c-input-group o-field"> <textarea ref="obs" class="c-input c-field" placeholder="Observaciones"></textarea> <textarea ref="notas" class="c-input c-field" placeholder="Notas"></textarea> <textarea ref="fotos" class="c-input c-field" placeholder="Fotos" style="display:none"></textarea> </div> <div class="c-card__item c-input-group c-input-group o-field"> <br> <label class="c-toggle c-toggle--error" style="width: 100%; padding: 1em;"> <input ref="careful_toggle" type="checkbox" onchange="{update_and_scroll}"> <div class="c-toggle__track"> <div class="c-toggle__handle"></div> </div> Opciones avanzadas </label> <br> </div> <div ref="careful_section" if="{this.refs.careful_toggle.checked}" class="c-card__item u-centered"> <br> <button if="{selected_tree}" class="c-button {c-button--success : selected_tree.gps_state==\'Auto\'} {c-button--error : selected_tree.gps_state==\'Manual\'} c-button--rounded u-large u-high" style="width: 80%" onclick="{toggle_gps}">GPS : {selected_tree.gps_state}</button> <br> <br> <hr> <br> <button if="{selected_tree}" class="c-button c-button--error c-button--rounded u-large u-high" style="width: 80%" onclick="{drop_selected_tree}">BORRAR REGISTRO</button> <br><br> </div> </div> </div> </div> </main>', 'survey-list .auto-field::-webkit-input-placeholder,[data-is="survey-list"] .auto-field::-webkit-input-placeholder{ color: #96a8b2; } survey-list ::-webkit-input-placeholder,[data-is="survey-list"] ::-webkit-input-placeholder{ color: white; } survey-list .c-input,[data-is="survey-list"] .c-input{ text-align: center; background-color: #e5eaec; border-color: #96a8b2; } survey-list .head-label,[data-is="survey-list"] .head-label{ color: #96a8b2; padding: 0px !important; border: none; } survey-list .head-field,[data-is="survey-list"] .head-field{ border-bottom: none !important; padding-bottom: 0px; } survey-list #picButton,[data-is="survey-list"] #picButton{ width: 80%; }', '', function(opts) {
 var tag, especies, tree, converter, OutputUri;
 tag = this;
 if (localStorage.getItem("trees") !== null) {
-    tag.trees = JSON.parse(localStorage.getItem("trees"));
+    tag.trees = list_wrap(JSON.parse(localStorage.getItem("trees")));
 } else {
     tag.trees = ρσ_list_decorate([]);
 }
@@ -20,8 +20,6 @@ for (var ρσ_Index0 = 0; ρσ_Index0 < ρσ_Iter0.length; ρσ_Index0++) {
                 return ρσ_d;
             }).call(this);
         }
-    } else {
-        tag.trees.splice(tag.trees.indexOf(tree));
     }
 }
 tag.especies = especies;
@@ -41,12 +39,10 @@ TreeRecord.prototype.__init__ = function __init__() {
         id = ρσ_kwargs_obj.id;
     }
     if (id !== null) {
-        self.id = id;
-        self.data = (ρσ_expr_temp = tag.trees)[ρσ_bound_index(id - 1, ρσ_expr_temp)];
+        self.data = (ρσ_expr_temp = tag.trees)[(typeof id === "number" && id < 0) ? ρσ_expr_temp.length + id : id];
         return self;
     }
-    self.id = TreeRecord.count + 1;
-    TreeRecord.count += 1;
+    self.id = len(tag.trees);
     self.data = {};
     self.data["fotos"] = ρσ_list_decorate([]);
     self.start_gps();
@@ -64,10 +60,10 @@ TreeRecord.__handles_kwarg_interpolation__ = TreeRecord.prototype.__init__.__han
 TreeRecord.prototype.start_gps = function start_gps() {
     var self = this;
     self.gps_state = "Auto";
-    self.watch = navigator.geolocation.watchPosition(self.succeed, self.error, (function(){
+    window.watch = navigator.geolocation.watchPosition(self.succeed, self.error, (function(){
         var ρσ_d = {};
         ρσ_d["maximumAge"] = 5e4;
-        ρσ_d["timeout"] = 2e4;
+        ρσ_d["timeout"] = 3e4;
         ρσ_d["enableHighAccuracy"] = true;
         return ρσ_d;
     }).call(this));
@@ -77,7 +73,7 @@ if (!TreeRecord.prototype.start_gps.__argnames__) Object.defineProperties(TreeRe
 });
 TreeRecord.prototype.commit = function commit() {
     var self = this;
-    (ρσ_expr_temp = tag.trees)[ρσ_bound_index(self.id - 1, ρσ_expr_temp)] = self.data;
+    (ρσ_expr_temp = tag.trees)[ρσ_bound_index(self.id, ρσ_expr_temp)] = self.data;
     if (self.data["especie"] !== "" && !(ρσ_in(self.data["especie"], tag.especies))) {
         (ρσ_expr_temp = tag.especies)[ρσ_bound_index(self.data["especie"], ρσ_expr_temp)] = (function(){
             var ρσ_d = {};
@@ -133,8 +129,8 @@ if (!TreeRecord.prototype.updateLatLong.__argnames__) Object.defineProperties(Tr
 TreeRecord.prototype.succeed = function succeed(position) {
     var self = this;
     self = tag.selected_tree;
-    tag.refs.lat.value = self.data["lat"] = position.coords.latitude;
-    tag.refs.long.value = self.data["long"] = position.coords.longitude;
+    tag.refs.lat.value = position.coords.latitude;
+    tag.refs.long.value = position.coords.longitude;
     self.updateUtm();
     color_placeholders();
 };
@@ -150,13 +146,16 @@ if (!TreeRecord.prototype.error.__argnames__) Object.defineProperties(TreeRecord
 });
 TreeRecord.prototype.drop = function drop() {
     var self = this;
-    if (confirm("BORRAR registro #" + tag.selected_tree.id)) {
-        resetFormValues();
-        getFormValues(tag.selected_tree);
-        save_db();
-        tag.adding_tree = false;
+    if (confirm("Borrar registro #" + (int(tag.trees.indexOf(self.data)) + 1))) {
         clearWatch(tag.selected_tree);
+        if (ρσ_in(self.data, tag.trees)) {
+            tag.trees.remove(self.data);
+        }
+        resetFormValues();
+        tag.trying_to_exit = false;
+        tag.adding_tree = false;
         delete tag.selected_tree;
+        save_db(false);
         tag.update();
     }
 };
@@ -299,6 +298,7 @@ function commit_tree(e) {
         tag.refs.codigo.focus();
         return;
     }
+    tag.trying_to_exit = false;
     getFormValues(tag.selected_tree);
     resetFormValues();
     save_db();
@@ -312,6 +312,45 @@ if (!commit_tree.__argnames__) Object.defineProperties(commit_tree, {
 });
 
 this.commit_tree = commit_tree;
+function drop_selected_tree(event) {
+    if (this.selected_tree !== undefined) {
+        if (ρσ_in(this.selected_tree.data, tag.trees)) {
+            this.selected_tree.drop();
+        } else {
+            resetFormValues();
+            tag.trying_to_exit = false;
+            tag.adding_tree = false;
+            delete tag.selected_tree;
+            tag.update();
+        }
+    }
+};
+if (!drop_selected_tree.__argnames__) Object.defineProperties(drop_selected_tree, {
+    __argnames__ : {value: ["event"]}
+});
+
+this.drop_selected_tree = drop_selected_tree;
+function update_and_scroll(ev) {
+    tag.update();
+    tag.refs.careful_section.scrollIntoView();
+};
+if (!update_and_scroll.__argnames__) Object.defineProperties(update_and_scroll, {
+    __argnames__ : {value: ["ev"]}
+});
+
+this.update_and_scroll = update_and_scroll;
+function get_tree_index(tree) {
+    if (ρσ_in(tree.data, tag.trees)) {
+        return tag.trees.indexOf(tree.data) + 1;
+    } else {
+        return len(tag.trees) + 1;
+    }
+};
+if (!get_tree_index.__argnames__) Object.defineProperties(get_tree_index, {
+    __argnames__ : {value: ["tree"]}
+});
+
+this.get_tree_index = get_tree_index;
 function load_tree(event) {
     var id, tree, options, item;
     id = event.target.getAttribute("data-id");
@@ -319,8 +358,6 @@ function load_tree(event) {
     tag.adding_tree = true;
     tree.gps_state = "Manual";
     tag.update();
-    tag.refs.lat.disabled = false;
-    tag.refs.long.disabled = false;
     tag.refs.careful_toggle.checked = false;
     tag.refs.especie.value = tree.data["especie"] || "";
     tag.refs.cientifico.value = tree.data["cientifico"] || "";
@@ -376,13 +413,17 @@ this.load_tree = load_tree;
 function deny_pic_button() {
     var orig_color, orig_text;
     orig_color = tag.refs.picButton.style.backgroundColor;
-    tag.refs.picButton.style.backgroundColor = "red";
+    tag.refs.picButton.style.backgroundColor = "orange";
     orig_text = tag.refs.picButton.innerHTML;
-    tag.refs.picButton.innerHTML = "Asigna un código";
+    tag.refs.picButton.innerHTML = "Recuerda asignar código";
+    tag.trying_to_exit = true;
+    tag.update();
     function restore() {
         tag.refs.picButton.style.backgroundColor = orig_color;
         tag.refs.picButton.innerHTML = orig_text;
         document.removeEventListener("input", restore);
+        tag.trying_to_exit = false;
+        tag.update();
     };
 
     document.addEventListener("input", restore);
@@ -488,7 +529,6 @@ if (!failPic.__argnames__) Object.defineProperties(failPic, {
 
 function getFormValues(tree) {
     var options, item;
-    tree.data["id"] = tree.id;
     tree.data["especie"] = str(tag.refs.especie.value);
     tree.data["cientifico"] = str(tag.refs.cientifico.value);
     tree.data["familia"] = str(tag.refs.familia.value);
@@ -550,8 +590,8 @@ function resetFormValues() {
 };
 
 function clearWatch(tree) {
-    if (tree.watch !== undefined) {
-        navigator.geolocation.clearWatch(tree.watch);
+    if (window.watch !== undefined) {
+        navigator.geolocation.clearWatch(window.watch);
     }
     if (tree.timer !== undefined) {
         clearInterval(tree.timer);
@@ -599,7 +639,7 @@ this.hide_db = hide_db;
 function reset_db() {
     var filename, date, datestring, uri;
     tag.db_diag = false;
-    if (confirm("Se vaciará la base de datos, seguro?")) {
+    if (confirm("Se vaciará la base de datos, ¿seguro?")) {
         filename = "censa_arbol_db";
         if (window.cordova) {
             date = new Date;
